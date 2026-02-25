@@ -39,7 +39,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, RetrieveAPIView, GenericAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, GenericAPIView, CreateAPIView, UpdateAPIView, \
+    DestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -55,6 +56,8 @@ from apps.serializers import (
     DeliveryPointsListModelSerializer,
     DeliveryPointsRetrieveModelSerializer, QRLoginStatusResponseSerializer, QRLoginRequestResponseSerializer,
     QRLoginAuthorizeRequestSerializer, MessageSerializer, ProductListFilterSerializer, ChatRoomListSerializer,
+    ProductListSerializer, ProductReadSerializer, ProductCreateSerializer, ProductUpdateSerializer,
+    ProductDeleteSerializer,
 )
 from utils import _generate_qr_image_base64
 
@@ -241,6 +244,46 @@ class ChatHistoryView(ListAPIView):
 
         return qs.order_by("-timestamp")
 
+@extend_schema(tags=["product"])
+class ProductListAPIView(ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductListSerializer
+
+    def get_queryset(self):
+        return Product.objects.annotate(
+            starting_price=Min('variants__price')
+        ).select_related('brand').order_by('-id')
+
+@extend_schema(tags=["product"])
+class ProductReadAPIView(RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductReadSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Product.objects.prefetch_related(
+            Prefetch('variants', queryset=ProductVariantModel.objects.all(), to_attr='all_variants')
+        )
+
+@extend_schema(tags=["product"])
+class ProductCreateAPIView(CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductCreateSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+@extend_schema(tags=["product"])
+class ProductDeleteAPIView(DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductDeleteSerializer
+    lookup_field = 'id'
+
+@extend_schema(tags=["product"])
+class ProductUpdateAPIView(UpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductUpdateSerializer
+    lookup_field = 'id'
 
 @extend_schema(tags=["Filter"])
 class ProductViewSet(ReadOnlyModelViewSet):

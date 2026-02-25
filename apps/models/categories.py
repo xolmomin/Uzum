@@ -37,7 +37,7 @@ class Category(MPTTModel, SlugBaseModel):
     attributes = ManyToManyField("apps.Attribute", blank=True)
 
 
-class Product(CreatedBaseModel):
+class Product(CreatedBaseModel,SlugBaseModel):
     category = ForeignKey('apps.Category', CASCADE,
                           related_name='products')
 
@@ -107,3 +107,6 @@ class ProductVariantModel(Model):
 
     def __str__(self):
         return f"{self.product.name_uz} | SKU: {self.sku_id} | {self.attributes_cache}"
+
+class CommentsModel(Model):
+    product = ForeignKey('apps.Product', CASCADE, related_name='comments')

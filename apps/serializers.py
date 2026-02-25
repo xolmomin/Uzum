@@ -121,6 +121,46 @@ class QRLoginStatusResponseSerializer(Serializer):
         return data
 
 
+class ProductListSerializer(ModelSerializer):
+    starting_price = DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    brand_name = serializers.CharField(source='brand.name', read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name_uz', 'slug', 'brand_name', 'starting_price']
+
+class ProductReadSerializer(ModelSerializer):
+    variants = SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name_uz', 'slug', 'category', 'brand', 'variants']
+
+    def get_variants(self, obj) -> list:
+        variants = getattr(obj, 'all_variants', obj.variants.all())
+        return [{
+            "skuId": v.sku_id,
+            "price": v.price,
+            "stock": v.stock,
+            "attributes": v.attributes_cache,
+            "variant_slug": v.variant_slug
+        } for v in variants]
+
+class ProductCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['name_uz', 'slug', 'category', 'brand']
+
+class ProductUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['name_uz', 'category', 'brand']
+
+class ProductDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = []
+
 class ProductListFilterSerializer(Serializer):
     brand_name = CharField(source='brand.name', read_only=True)
 

@@ -28,6 +28,7 @@ dependencies = [
     "redis>=7.2.0",
     "ujson>=5.11.0",
     "django-elasticsearch-dsl>=9.0",
+    "djangorestframework-stubs>=3.16.8",
 ]
 
 [dependency-groups]
