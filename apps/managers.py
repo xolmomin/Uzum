@@ -1,4 +1,5 @@
 from django.contrib.auth.models import UserManager
+from django.db.models import QuerySet
 
 
 class CustomUserManager(UserManager):
@@ -35,3 +36,26 @@ class CustomUserManager(UserManager):
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(phone, email, **extra_fields)
+
+
+class UserQuerySet(QuerySet):
+    def admins(self):
+        return self.filter(type="admin")
+
+    def sellers(self):
+        return self.filter(type="seller")
+
+    def customers(self):
+        return self.filter(type="user")
+
+class AdminUserManager(UserManager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db).admins()
+
+class SellerUserManager(UserManager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db).sellers()
+
+class CustomerUserManager(UserManager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db).customers()

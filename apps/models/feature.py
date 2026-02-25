@@ -1,87 +1,31 @@
-from django.db.models import Model, CharField, ForeignKey, CASCADE, FileField, SET_NULL
+from django.db.models import Model, CharField, ImageField, ForeignKey, CASCADE, ManyToManyField
 
-from apps.models.base import ImageBaseModel
-from apps.models.utils import validate_video
-
-
-class ProductModel(Model):
-    name = CharField(max_length=50)
-    category = ForeignKey('apps.Category', on_delete=CASCADE, related_name='product_models')
+from apps.models.base import SlugBaseModel
 
 
 class Brand(Model):
-    title = CharField(max_length=100)
-    category = ForeignKey('apps.Category', on_delete=CASCADE, related_name='product_brands')
+    name = CharField(max_length=100)
+    logo = ImageField(upload_to='brands/', null=True, blank=True)
+
+
+class ProductModel(SlugBaseModel):
+    name = CharField(max_length=100)
+    brand = ForeignKey("apps.Brand", CASCADE, related_name='models')
 
 
 class Country(Model):
-    name = CharField(max_length=50)
-# from django.db.models import Model, CharField, ForeignKey, CASCADE, FileField, SET_NULL
-#
-# from apps.models.base import ImageBaseModel
-# from apps.models.utils import validate_video
-#
-#
-# class ProductModel(Model):
-#     name = CharField(max_length=50)
-#     category = ForeignKey('apps.Category', on_delete=CASCADE, related_name='product_models')
-#
-#
-# class Brand(Model):
-#     title = CharField(max_length=100)
-#     category = ForeignKey('apps.Category', on_delete=CASCADE, related_name='product_brands')
-#
-#
-# class Country(Model):
-#     name = CharField(max_length=50)
-#
-#
-# class ProductImage(ImageBaseModel):
-#     product = ForeignKey('apps.Product', on_delete=CASCADE, related_name='images')
-#
-#
-# class ProductVideo(Model):
-#     video = FileField(upload_to='product/videos/', validators=[validate_video])
-#     product = ForeignKey('apps.Product', on_delete=CASCADE, related_name='videos')
-#
-#
-# class Color(Model):
-#     name = CharField(max_length=50)
-#
-#
-# class Ram(Model):
-#
-#
-#
-# class ProductColor(Model):
-#     color = ForeignKey('apps.Color', on_delete=SET_NULL)
-#     product = ForeignKey('apps.Product', CASCADE, related_name='colors')
+    name_uz = CharField(max_length=100)
 
 
-class ProductImage(ImageBaseModel):
-    product = ForeignKey('apps.Product', on_delete=CASCADE, related_name='images')
+class Attribute(Model):
+    name = CharField(max_length=100)
 
 
-class ProductVideo(Model):
-    video = FileField(upload_to='product/videos/', validators=[validate_video])
-    product = ForeignKey('apps.Product', on_delete=CASCADE, related_name='videos')
+class AttributeValue(Model):
+    attribute = ForeignKey("apps.Attribute", CASCADE, related_name='values')
+    value = CharField(max_length=100)
 
 
 class Color(Model):
     name = CharField(max_length=50)
-
-
-class Ram(Model):
-    pass
-
-
-class ProductColor(Model):
-    color = ForeignKey('apps.Color', on_delete=SET_NULL)
-    product = ForeignKey('apps.Product', CASCADE, related_name='colors')
-
-
-class ProductRam(Model):
-    pass
-
-# class ProductRam(Model):
-#     pass
+    category = ManyToManyField('Category', related_name='colors')

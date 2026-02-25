@@ -68,6 +68,13 @@ Task:
 3.Ko'ptillik
 4.Hamma tovarlarni ko'rish ko'rish
 5.Selenium orqali uzumni katalogini ko'chiramiz
+6.Elasticsearch qo'shish alohida texnalogiya
+7.Argon database
+8.Register yoki login qilgan user boshqa joyda login qilsa QR-Code Chiqsin
+9.Input JS
+10.Querysetni to'g'irlash ya'ni (User.admins.all())desak faqat adminlarni yoki (User.users.all()) desak userlarni olib kelishi kerak
+11.GIndexdan foydalanish
+12.Faqat sellerda balance bor
 
 
 

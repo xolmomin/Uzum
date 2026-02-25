@@ -7,6 +7,11 @@ dependencies = [
     "boto3>=1.42.46",
     "celery>=5.6.2",
     "django>=6.0.2",
+    "channels>=4.0.0",
+    "channels-redis>=4.1.0",
+    "argon2-cffi>=23.1.0",
+    "elasticsearch>=8.15.0",
+    "qrcode>=7.4.2",
     "django-celery-beat>=2.1.0",
     "django-ckeditor-5>=0.2.19",
     "django-filter>=25.2",
@@ -21,4 +26,14 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "python-dotenv>=1.2.1",
     "redis>=7.2.0",
+    "ujson>=5.11.0",
+    "django-elasticsearch-dsl>=9.0",
+]
+
+[dependency-groups]
+dev = [
+    "blinker>=1.9.0",
+    "selenium>=4.41.0",
+    "selenium-wire>=5.1.0",
+    "webdriver-manager>=4.0.2",
 ]
