@@ -1,0 +1,218 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Kodni tasdiqlash | {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "admin/css/login.css" %}">
+  <style>
+    #confirm-form .form-row input[readonly] {
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #f4f4f4;
+      color: #555;
+      cursor: not-allowed;
+      border: 1px solid #ccc;
+    }
+
+    .otp-wrapper {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 14px 0 6px;
+    }
+
+    .otp-box {
+      width: 29px;
+      height: 35px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+      background: #fff;
+      color: #333;
+      caret-color: transparent;
+    }
+
+    .otp-box:focus {
+      border-color: #417690;
+      box-shadow: 0 0 0 3px rgba(65, 118, 144, 0.18);
+    }
+
+    .otp-box.filled {
+      border-color: #417690;
+      background-color: #eef4f8;
+    }
+
+    .otp-box.otp-error {
+      border-color: #ba2121;
+      background-color: #fff3f3;
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-5px); }
+      75%       { transform: translateX(5px); }
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.88em;
+      color: #417690;
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+{% block nav-global %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+
+  {% if error %}
+  <p class="errornote" id="error-msg">{{ error }}</p>
+  {% endif %}
+
+  <form action="" method="post" id="confirm-form">
+    {% csrf_token %}
+
+    <div class="form-row">
+      <label for="id_phone_display">Telefon raqam:</label>
+      <input
+        type="tel"
+        id="id_phone_display"
+        value="{{ phone_display }}"
+        readonly
+      >
+    </div>
+
+    <div class="form-row">
+      <label>SMS kod:</label>
+      <div class="otp-wrapper" id="otp-wrapper">
+        <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autocomplete="one-time-code">
+        <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autocomplete="off">
+      </div>
+      <input type="hidden" name="code" id="id_code">
+    </div>
+
+    <div class="submit-row">
+      <input type="submit" value="Kirish" id="submit-btn">
+    </div>
+  </form>
+
+  <a class="back-link" href="{% url 'admin:login' %}">&#8592; Telefon raqamni o'zgartirish</a>
+
+</div>
+
+<script>
+jQuery(document).ready(function ($) {
+
+  // --- Phone display: inputmask formatlashtiradi ---
+  $('#id_phone_display').inputmask('+\\9\\98(99) 999-99-99', { placeholder: ' ' });
+
+  // --- OTP boxes ---
+  var $boxes = $('.otp-box');
+  var hasError = {{ error|yesno:"true,false" }};
+
+  if (hasError) {
+    $boxes.addClass('otp-error');
+  }
+
+  $boxes.first().focus();
+
+  function distributeDigits(digits, startIdx) {
+    $boxes.each(function (i) {
+      var pos = i - startIdx;
+      if (pos >= 0 && pos < digits.length) {
+        $(this).val(digits[pos]).addClass('filled').removeClass('otp-error');
+      }
+    });
+    var nextIdx = Math.min(startIdx + digits.length, $boxes.length - 1);
+    $boxes.eq(nextIdx).focus();
+  }
+
+  $boxes.on('keydown', function (e) {
+    var $box = $(this);
+    var idx  = $boxes.index(this);
+
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if ($box.val()) {
+        $box.val('').removeClass('filled otp-error');
+      } else if (idx > 0) {
+        $boxes.eq(idx - 1).val('').removeClass('filled otp-error').focus();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); if (idx > 0) $boxes.eq(idx - 1).focus(); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); if (idx < $boxes.length - 1) $boxes.eq(idx + 1).focus(); return; }
+
+    // Faqat raqamlarga ruxsat
+    if (!/^\d$/.test(e.key) && !['Tab', 'Delete'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  $boxes.on('input', function () {
+    var $box  = $(this);
+    var idx   = $boxes.index(this);
+    var val   = $box.val().replace(/\D/g, '');
+
+    // Browser autofill yoki noto'g'ri ko'p raqam kiritilsa — tarqatib yuborish
+    if (val.length > 1) {
+      $box.val('');
+      distributeDigits(val, idx);
+      return;
+    }
+
+    $box.val(val);
+    if (val) {
+      $box.addClass('filled').removeClass('otp-error');
+      if (idx + 1 < $boxes.length) $boxes.eq(idx + 1).focus();
+    } else {
+      $box.removeClass('filled');
+    }
+  });
+
+  // Paste: clipboard dan kodni joylashtirish
+  $boxes.on('paste', function (e) {
+    e.preventDefault();
+    var text   = (e.originalEvent.clipboardData || window.clipboardData).getData('text');
+    var digits = text.replace(/\D/g, '').slice(0, 6);
+    distributeDigits(digits, $boxes.index(this));
+  });
+
+  // Submit oldidan hidden inputga yig'ish
+  $('#confirm-form').on('submit', function () {
+    var code = '';
+    $boxes.each(function () { code += $(this).val(); });
+    $('#id_code').val(code);
+  });
+
+});
+</script>
+{% endblock %}

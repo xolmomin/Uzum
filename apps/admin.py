@@ -1,12 +1,13 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from unfold.admin import ModelAdmin, StackedInline
 
-from apps.models import City, DaysWeek, User, Weekday, WeekdaysInfo, DeliveryPoint
+from apps.admin_site import custom_admin_site
+from apps.models import User
 
+# admin.AdminSite.login()
 
-@admin.register(User)
-class CustomUserAdmin(ModelAdmin):
+@admin.register(User, site=custom_admin_site)
+class CustomUserAdmin(admin.ModelAdmin):
     list_display = ("phone", "first_name", "last_name", "is_staff")
     list_filter = ("is_staff", "is_superuser", "is_active", "groups")
     search_fields = ("first_name", "last_name", "phone")
@@ -37,12 +38,3 @@ class CustomUserAdmin(ModelAdmin):
             },
         ),
     )
-
-
-@admin.register(City)
-class CityAdmin(ModelAdmin):
-    pass
-
-@admin.register(DaysWeek)
-class DaysWeekAdmin(ModelAdmin):
-    pass

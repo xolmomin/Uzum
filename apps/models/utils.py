@@ -5,8 +5,8 @@ from django.db.models.fields.files import ImageFieldFile
 from rest_framework.exceptions import ValidationError
 
 uz_phone_validator = RegexValidator(
-    regex=r"^998\d{9}$",
-    message="Raqam faqat 998XXXXXXXXX formatida bo'lishi kerak"
+    regex=r"^\d{9}$",
+    message="Raqam faqat XXXXXXXXX formatida bo'lishi kerak"
 )
 
 
