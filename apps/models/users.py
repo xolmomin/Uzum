@@ -9,7 +9,7 @@ from apps.models.base import ImageBaseModel
 from apps.models.utils import uz_phone_validator
 
 
-class User(AbstractUser, ImageBaseModel):
+class BaseUser(AbstractUser, ImageBaseModel):
     class TypeChoice(TextChoices):
         ADMIN = 'admin', 'Admin'
         USER = 'user', 'User'
@@ -30,6 +30,7 @@ class User(AbstractUser, ImageBaseModel):
     birth_date = DateField(null=True, blank=True)
     username = None
     USERNAME_FIELD = "phone"
+
     objects = CustomUserManager()
     sellers = SellerCustomManager()
     managers = ManagerCustomManager()
